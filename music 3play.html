@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno Music Collection</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Animated Mesh Gradient Background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            background: linear-gradient(125deg, #0f172a, #1e1b4b, #2e1065, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientAnimation 18s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glowing Orbs in Background */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.45;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .orb-1 {
+            top: 10%;
+            left: 15%;
+            width: 350px;
+            height: 350px;
+            background: #8b5cf6;
+            animation: float 8s ease-in-out infinite alternate;
+        }
+        .orb-2 {
+            bottom: 10%;
+            right: 15%;
+            width: 400px;
+            height: 400px;
+            background: #ec4899;
+            animation: float 10s ease-in-out infinite alternate-reverse;
+        }
+        .orb-3 {
+            top: 40%;
+            right: 30%;
+            width: 300px;
+            height: 300px;
+            background: #3b82f6;
+            animation: float 12s ease-in-out infinite alternate;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card-active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.25);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Equalizer Animation Bars */
+        .eq-bar {
+            width: 3px;
+            background-color: #a855f7;
+            border-radius: 2px;
+            animation: bounce 1s infinite alternate ease-in-out;
+        }
+        .eq-bar:nth-child(1) { height: 16px; animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { height: 24px; animation-delay: 0.3s; }
+        .eq-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }
+        .eq-bar:nth-child(4) { height: 20px; animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0% { transform: scaleY(0.3); }
+            100% { transform: scaleY(1.1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-purple-500 selection:text-white">
+
+    <!-- Background FX -->
+    <div class="gradient-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 ease-out glass-card px-5 py-3 rounded-2xl flex items-center gap-3 border-l-4 border-purple-500 text-white shadow-2xl">
+        <i class="fa-solid me-1 fa-circle-check text-purple-400 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">Đã sao chép liên kết!</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="w-full max-w-6xl mx-auto p-4 md:p-6 flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <i class="fa-solid fa-music text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-purple-200">Suno Beats</h1>
+                <p class="text-xs text-purple-300/70 font-medium">Bộ sưu tập âm nhạc AI</p>
+            </div>
+        </div>
+        
+        <button onclick="sharePlaylist()" class="glass-card hover:bg-white/10 text-xs md:text-sm px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 border border-white/10 active:scale-95">
+            <i class="fa-solid fa-share-nodes text-purple-400"></i>
+            <span class="hidden sm:inline">Chia sẻ bộ sưu tập</span>
+        </button>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-6xl mx-auto px-4 py-4 md:py-8 flex-grow z-10">
+        
+        <!-- Hero Banner -->
+        <div class="glass-card rounded-3xl p-6 md:p-8 mb-8 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                <i class="fa-solid fa-compact-disc text-[240px] text-white"></i>
+            </div>
+            
+            <div class="max-w-2xl relative z-10">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 mb-4">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                    Danh Sách Bài Hát
+                </span>
+                <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-white">
+                    Giai Điệu Độc Bản <br><span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300">Suno AI Soundtracks</span>
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                    Thưởng thức 3 tác phẩm âm nhạc được tạo riêng. Lựa chọn bài hát bên dưới để nghe trực tiếp hoặc mở trên ứng dụng Suno.
+                </p>
+                
+                <div class="flex flex-wrap items-center gap-4 text-xs md:text-sm text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-purple-400"></i>
+                        <span>3 Bài hát</span>
+                    </div>
+                    <span class="text-slate-600">•</span>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-400"></i>
+                        <span>Chất lượng âm thanh cao</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Tracks List Side (7 Columns on large screens) -->
+            <div class="lg:col-span-7 space-y-4">
+                <h3 class="text-lg font-bold text-white/90 mb-2 flex items-center justify-between">
+                    <span>Danh sách phát</span>
+                    <span class="text-xs font-normal text-slate-400">Chọn bài để mở trình phát</span>
+                </h3>
+
+                <!-- Track Card 1 -->
+                <div id="card-0" onclick="selectTrack(0)" class="track-card glass-card rounded-2xl p-4 transition-all duration-300 cursor-pointer hover:border-purple-500/50 hover:bg-white/10 flex items-center gap-4 group relative overflow-hidden">
+                    <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-800 flex-shrink-0 flex items-center justify-center shadow-md">
+                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150&auto=format&fit=crop&q=80" alt="Track Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                        <div class="play-icon-overlay absolute inset-0 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-play text-xl drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">Track 01</span>
+                            <span id="playing-badge-0" class="hidden text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Đang chọn
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-white text-base md:text-lg truncate group-hover:text-purple-300 transition-colors mt-1">Suno Track #1</h4>
+                        <p class="text-xs text-slate-400 truncate">QSWPqjLzkIMwc9UP</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="event.stopPropagation(); copyLink('https://suno.com/s/QSWPqjLzkIMwc9UP')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/20 text-slate-300 hover:text-white transition-colors" title="Sao chép Link">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <a href="https://suno.com/s/QSWPqjLzkIMwc9UP" target="_blank" onclick="event.stopPropagation();" class="p-2.5 rounded-xl bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white transition-colors" title="Mở trên Suno">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Track Card 2 -->
+                <div id="card-1" onclick="selectTrack(1)" class="track-card glass-card rounded-2xl p-4 transition-all duration-300 cursor-pointer hover:border-purple-500/50 hover:bg-white/10 flex items-center gap-4 group relative overflow-hidden">
+                    <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-pink-600 to-purple-800 flex-shrink-0 flex items-center justify-center shadow-md">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=150&auto=format&fit=crop&q=80" alt="Track Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                        <div class="play-icon-overlay absolute inset-0 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-play text-xl drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-md border border-pink-500/20">Track 02</span>
+                            <span id="playing-badge-1" class="hidden text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Đang chọn
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-white text-base md:text-lg truncate group-hover:text-pink-300 transition-colors mt-1">Suno Track #2</h4>
+                        <p class="text-xs text-slate-400 truncate">sjyZV2AxcMsBM8mH</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="event.stopPropagation(); copyLink('https://suno.com/s/sjyZV2AxcMsBM8mH')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/20 text-slate-300 hover:text-white transition-colors" title="Sao chép Link">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <a href="https://suno.com/s/sjyZV2AxcMsBM8mH" target="_blank" onclick="event.stopPropagation();" class="p-2.5 rounded-xl bg-pink-600/30 hover:bg-pink-600 text-pink-200 hover:text-white transition-colors" title="Mở trên Suno">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Track Card 3 -->
+                <div id="card-2" onclick="selectTrack(2)" class="track-card glass-card rounded-2xl p-4 transition-all duration-300 cursor-pointer hover:border-purple-500/50 hover:bg-white/10 flex items-center gap-4 group relative overflow-hidden">
+                    <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-800 flex-shrink-0 flex items-center justify-center shadow-md">
+                        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&auto=format&fit=crop&q=80" alt="Track Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                        <div class="play-icon-overlay absolute inset-0 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-play text-xl drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">Track 03</span>
+                            <span id="playing-badge-2" class="hidden text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Đang chọn
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-white text-base md:text-lg truncate group-hover:text-cyan-300 transition-colors mt-1">Suno Track #3</h4>
+                        <p class="text-xs text-slate-400 truncate">0m24FttD4XgkgTVu</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="event.stopPropagation(); copyLink('https://suno.com/s/0m24FttD4XgkgTVu')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/20 text-slate-300 hover:text-white transition-colors" title="Sao chép Link">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <a href="https://suno.com/s/0m24FttD4XgkgTVu" target="_blank" onclick="event.stopPropagation();" class="p-2.5 rounded-xl bg-cyan-600/30 hover:bg-cyan-600 text-cyan-200 hover:text-white transition-colors" title="Mở trên Suno">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="lg:col-span-5">
+                <div class="glass-card rounded-3xl p-5 sticky top-6">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-end gap-1 h-5 px-1">
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                            </div>
+                            <h3 class="font-bold text-white text-sm uppercase tracking-wider">Trình Phát Nhạc</h3>
+                        </div>
+                        <span id="active-track-num" class="text-xs font-medium text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded-full border border-purple-500/30">
+                            Track 1/3
+                        </span>
+                    </div>
+
+                    <!-- Embed Container -->
+                    <div class="relative w-full rounded-2xl overflow-hidden bg-black/40 min-h-[380px] flex flex-col justify-center items-center shadow-inner">
+                        <!-- Loading Indicator -->
+                        <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-10 transition-opacity duration-300">
+                            <i class="fa-solid fa-circle-notch fa-spin text-purple-400 text-3xl mb-3"></i>
+                            <span class="text-xs text-slate-300 font-medium">Đang tải trình phát Suno...</span>
+                        </div>
+
+                        <!-- Iframe for Suno Embed -->
+                        <iframe 
+                            id="suno-iframe"
+                            src="https://suno.com/embed/QSWPqjLzkIMwc9UP" 
+                            class="w-full h-[380px] rounded-2xl border-0"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            onload="hideLoader()">
+                        </iframe>
+                    </div>
+
+                    <!-- Action Footer inside Player -->
+                    <div class="mt-4 pt-3 flex items-center justify-between gap-2">
+                        <button id="prev-btn" onclick="prevTrack()" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-backward-step"></i> Bài trước
+                        </button>
+                        <button id="next-btn" onclick="nextTrack()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30">
+                            Bài tiếp <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <a id="external-suno-link" href="https://suno.com/s/QSWPqjLzkIMwc9UP" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-purple-300 hover:text-white transition-colors">
+                            <span>Mở bài hát này trong tab mới trên Suno</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-6xl mx-auto p-6 text-center z-10">
+        <div class="glass-card rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <p>© 2026 Suno Music Collection • Đã gom 3 link thành 1 trang duy nhất</p>
+            <div class="flex items-center gap-4">
+                <button onclick="copyAllLinks()" class="hover:text-purple-300 transition-colors flex items-center gap-1.5">
+                    <i class="fa-regular fa-copy"></i> Sao chép tất cả 3 link
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Data for tracks
+        const tracks = [
+            {
+                id: 'QSWPqjLzkIMwc9UP',
+                title: 'Suno Track #1',
+                link: 'https://suno.com/s/QSWPqjLzkIMwc9UP',
+                embed: 'https://suno.com/embed/QSWPqjLzkIMwc9UP'
+            },
+            {
+                id: 'sjyZV2AxcMsBM8mH',
+                title: 'Suno Track #2',
+                link: 'https://suno.com/s/sjyZV2AxcMsBM8mH',
+                embed: 'https://suno.com/embed/sjyZV2AxcMsBM8mH'
+            },
+            {
+                id: '0m24FttD4XgkgTVu',
+                title: 'Suno Track #3',
+                link: 'https://suno.com/s/0m24FttD4XgkgTVu',
+                embed: 'https://suno.com/embed/0m24FttD4XgkgTVu'
+            }
+        ];
+
+        let currentTrackIndex = 0;
+
+        // Initialize state
+        window.onload = function() {
+            selectTrack(0);
+        };
+
+        function selectTrack(index) {
+            currentTrackIndex = index;
+            const track = tracks[index];
+
+            // Show Loader
+            const loader = document.getElementById('player-loader');
+            loader.style.opacity = '1';
+            loader.style.pointerEvents = 'auto';
+
+            // Update Iframe Source
+            const iframe = document.getElementById('suno-iframe');
+            iframe.src = track.embed;
+
+            // Update External Link
+            document.getElementById('external-suno-link').href = track.link;
+
+            // Update Track Badge
+            document.getElementById('active-track-num').innerText = `Track ${index + 1}/3`;
+
+            // Update UI Selection state
+            tracks.forEach((_, i) => {
+                const card = document.getElementById(`card-${i}`);
+                const badge = document.getElementById(`playing-badge-${i}`);
+                
+                if (i === index) {
+                    card.classList.add('glass-card-active', 'border-purple-500/60');
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                } else {
+                    card.classList.remove('glass-card-active', 'border-purple-500/60');
+                    badge.classList.add('hidden');
+                    badge.classList.remove('flex');
+                }
+            });
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('player-loader');
+            loader.style.opacity = '0';
+            loader.style.pointerEvents = 'none';
+        }
+
+        function prevTrack() {
+            let nextIndex = currentTrackIndex - 1;
+            if (nextIndex < 0) nextIndex = tracks.length - 1;
+            selectTrack(nextIndex);
+        }
+
+        function nextTrack() {
+            let nextIndex = currentTrackIndex + 1;
+            if (nextIndex >= tracks.length) nextIndex = 0;
+            selectTrack(nextIndex);
+        }
+
+        // Copy Clipboard Helper using document.execCommand
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Avoid scrolling to bottom
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('Đã sao chép liên kết vào bộ nhớ tạm!');
+            } catch (err) {
+                showToast('Không thể sao chép liên kết!');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function copyLink(url) {
+            copyToClipboard(url);
+        }
+
+        function copyAllLinks() {
+            const allLinks = tracks.map((t, idx) => `Track ${idx + 1}: ${t.link}`).join('\n');
+            copyToClipboard(allLinks);
+        }
+
+        function sharePlaylist() {
+            copyToClipboard(window.location.href);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            
+            toastMsg.innerText = message;
+            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-100px]', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
